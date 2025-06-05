@@ -33,21 +33,24 @@ pipeline {
                 sh 'mvn test'
             }
         }
-    } // closes stages
-      stage("Sonarqube Analysis "){
-            steps{
+
+        stage('Sonarqube Analysis') {
+            steps {
                 withSonarQubeEnv('sonar-server') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Petclinic \
-                    -Dsonar.java.binaries=. \
-                    -Dsonar.projectKey=Petclinic '''
+                    sh '''$SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectName=Petclinic \
+                        -Dsonar.java.binaries=. \
+                        -Dsonar.projectKey=Petclinic'''
                 }
             }
         }
-        stage("quality gate"){
-           steps {
-                 script {
-                     waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token' 
-                    }
-                } 
-        }
 
+        stage('quality gate') {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
+                }
+            }
+        }
+    } // closes stages
+} // closes pipeline
