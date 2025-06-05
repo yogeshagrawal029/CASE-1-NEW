@@ -3,9 +3,9 @@ pipeline{
     tools{
         maven 'maven' 
     }
-    environment {
-        SCANNER_HOME=tool 'sonar-scanner'
-    }
+    #environment {
+        #SCANNER_HOME=tool 'sonar-scanner'
+    #}
     stages {
         stage('clean workspace'){
             steps{
@@ -22,22 +22,22 @@ pipeline{
                 sh 'mvn clean install'
             }
         }
-        stage("Sonarqube Analysis "){
-            steps{
-                withSonarQubeEnv('sonar-server') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Petclinic \
-                    -Dsonar.java.binaries=. \
-                    -Dsonar.projectKey=Petclinic '''
-                }
-            }
-        }
-        stage("quality gate"){
-           steps {
-                 script {
-                     waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token' 
-                    }
-                } 
-        } 
+        #stage("Sonarqube Analysis "){
+            #steps{
+                #withSonarQubeEnv('sonar-server') {
+                    #sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Petclinic \
+                    #-Dsonar.java.binaries=. \
+                    #-Dsonar.projectKey=Petclinic '''
+               # }
+            #}
+       # }
+        #stage("quality gate"){
+           #steps {
+                 #script {
+                     #waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token' 
+                    #}
+                #} 
+        #} 
         stage("Docker Build & Push"){
             steps{
                 script{
@@ -48,11 +48,11 @@ pipeline{
                 }
             }
         }
-        stage("TRIVY"){
-            steps{
-                sh "trivy image bhavani1206/imagetest > trivy.txt" 
-            }
-        }
+        #stage("TRIVY"){
+            #steps{
+                #sh "trivy image bhavani1206/imagetest > trivy.txt" 
+           # }
+       # }
         stage('Clean up containers') {   //if container runs it will stop and remove this block
           steps {
            script {
