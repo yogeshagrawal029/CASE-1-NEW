@@ -35,28 +35,21 @@ pipeline {
             }
         }
 
-        stage('Sonarqube Analysis') {
-    steps {
-        withSonarQubeEnv('sonar-server') {
-            sh '''
-                $SCANNER_HOME/bin/sonar-scanner \
-                -Dsonar.projectKey=Petclinic \
-                -Dsonar.projectName=Petclinic \
-                -Dsonar.projectVersion=1.0 \
-                -Dsonar.sources=src \
-                -Dsonar.java.binaries=target/classes
-            '''
-        }
-    }
-}
-
-
-        stage('quality gate') {
-            steps {
-                script {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
+        stage("Sonarqube Analysis "){
+            steps{
+                withSonarQubeEnv('sonar-server') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=case1 \
+                    -Dsonar.java.binaries=. \
+                    -Dsonar.projectKey=case1 '''
                 }
             }
         }
+        stage("quality gate"){
+           steps {
+                 script {
+                     waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token' 
+                    }
+                } 
+        } 
     } // closes stages
 } // closes pipeline
