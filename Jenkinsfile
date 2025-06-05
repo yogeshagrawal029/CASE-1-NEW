@@ -48,11 +48,11 @@ pipeline{
                 }
             }
         }
-        #stage("TRIVY"){
-            #steps{
-                #sh "trivy image bhavani1206/imagetest > trivy.txt" 
-           # }
-       # }
+        //stage("TRIVY"){
+            //steps{
+                //sh "trivy image bhavani1206/imagetest > trivy.txt" 
+           // }
+       // }
         stage('Clean up containers') {   //if container runs it will stop and remove this block
           steps {
            script {
