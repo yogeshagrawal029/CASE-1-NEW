@@ -15,17 +15,12 @@ pipeline{
         }
         stage('Checkout From Git'){
             steps{
-                git branch: 'main', url: 'https://github.com/Aj7Ay/Petclinic-Real.git'
+                git branch: 'main', url: 'https://github.com/bhavanigowda987/Case1_Repo'
             }
         }
-        stage('mvn compile'){
+        stage('mvn install'){
             steps{
-                sh 'mvn clean compile'
-            }
-        }
-        stage('mvn test'){
-            steps{
-                sh 'mvn test'
+                sh 'mvn clean install'
             }
         }
         stage("Sonarqube Analysis "){
@@ -44,31 +39,19 @@ pipeline{
                     }
                 } 
         } 
-        stage('mvn build'){
-            steps{
-                sh 'mvn clean install'
-            }
-        }  
-        stage("OWASP Dependency Check"){
-            steps{
-                dependencyCheck additionalArguments: '--scan ./ --format HTML ', odcInstallation: 'DP-Check'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.html'
-            }
-        }
         stage("Docker Build & Push"){
             steps{
                 script{
-                   withDockerRegistry(credentialsId: 'docker', toolName: 'docker'){   
-                       sh "docker build -t petclinic1 ."
-                       sh "docker tag petclinic1 sevenajay/petclinic1:latest "
-                       sh "docker push sevenajay/petclinic1:latest "
+                   withDockerRegistry(credentialsId: 'DOCKERHUB_CREDENTIALS', toolName: 'docker'){   
+                       sh "docker build -t bhavani1206/imagetest ."
+                       sh "docker push bhavani1206/imagetest "
                     }
                 }
             }
         }
         stage("TRIVY"){
             steps{
-                sh "trivy image sevenajay/petclinic1:latest > trivy.txt" 
+                sh "trivy image bhavani1206/imagetest > trivy.txt" 
             }
         }
         stage('Clean up containers') {   //if container runs it will stop and remove this block
@@ -111,12 +94,7 @@ pipeline{
     }
         stage('Deploy to conatiner'){
             steps{
-                sh 'docker run -d --name pet1 -p 8082:8080 sevenajay/petclinic1:latest'
-            }
-        }
-        stage("Deploy To Tomcat"){
-            steps{
-                sh "sudo cp  /var/lib/jenkins/workspace/petclinic/target/petclinic.war /opt/apache-tomcat-9.0.65/webapps/ "
+                sh 'docker run -d --name java1 -p 8082:8080 bhavani1206/imagetest'
             }
         }
         stage('Deploy to kubernets'){
