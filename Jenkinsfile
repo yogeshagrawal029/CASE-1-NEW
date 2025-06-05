@@ -38,9 +38,9 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonar-server') {
                     sh '''$SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectName=Case1 \
+                        -Dsonar.projectName=case1 \
                         -Dsonar.java.binaries=. \
-                        -Dsonar.projectKey=Case1'''
+                        -Dsonar.projectKey=case1'''
                 }
             }
         }
