@@ -76,7 +76,7 @@ pipeline{
               URL de build: ${env.BUILD_URL}
               """
              mail(
-             to: 'postbox.aj99@gmail.com',
+             to: 'bhavanijd51@gmail.com',
              subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", 
              body: approvalMailContent,
              mimeType: 'text/plain'
@@ -113,7 +113,7 @@ pipeline{
             body: "Project: ${env.JOB_NAME}<br/>" +
                 "Build Number: ${env.BUILD_NUMBER}<br/>" +
                 "URL: ${env.BUILD_URL}<br/>",
-            to: 'postbox.aj99@gmail.com',
+            to: 'bhavanijd51@gmail.com',
             attachmentsPattern: 'trivy.txt'
         }
     }
@@ -124,7 +124,7 @@ pipeline{
 
 stage('Manual Approval') {
   timeout(time: 10, unit: 'MINUTES') {
-    mail to: 'postbox.aj99@gmail.com',
+    mail to: 'bhavanijd51@gmail.com',
          subject: "${currentBuild.result} CI: ${env.JOB_NAME}",
          body: "Project: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nGo to ${env.BUILD_URL} and approve deployment"
     input message: "Deploy ${params.project_name}?", 
