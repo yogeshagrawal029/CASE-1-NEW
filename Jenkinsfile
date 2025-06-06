@@ -68,4 +68,9 @@ pipeline {
                 sh "trivy image bhavani1206/case1:latest > trivy.txt" 
             }
         }
+    tage('Deploy to conatiner'){
+            steps{
+                sh 'docker run -d --name case1 -p 8082:8080 bhavani1206/case1:latest'
+            }
+        }
 } // closes pipeline
