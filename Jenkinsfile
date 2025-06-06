@@ -1,118 +1,83 @@
+
 pipeline {
-  agent any
-  environment {
-    IMAGE_NAME = "bhavani1206/first"
-    MANIFEST_PATH = "manifest_file/k8s"
-  }
+    agent any
 
-  stages {
-    stage('Checkout') {
-      steps {
-        git branch: 'main', url: 'https://github.com/bhavanigowda987/Case1_Repo'
-      }
+    tools {
+        maven 'maven'
     }
 
-    stage('Build and Test') {
-      steps {
-        sh 'ls -ltr'
-        sh 'mvn clean package'
-      }
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner-latest'
     }
 
-    stage('Build and Push Docker Image') {
-      steps {
-        script {
-          sh 'docker build -t $IMAGE_NAME .'
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
         }
-      }
-    }
 
-    stage('Push to DockerHub') {
-      steps {
-        withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_CREDENTAILS', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          sh '''
-            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            docker push $IMAGE_NAME
-          '''
+        stage('Checkout From Git') {
+            steps {
+                git branch: 'main', url: 'https://github.com/bhavanigowda987/Case1_Repo'
+            }
         }
-      }
-    }
 
-    stage('Static Code Analysis') {
-      environment {
-        SONAR_URL = "http://3.108.184.223:9000"
-      }
-      steps {
-        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
-          sh '''
-            mvn sonar:sonar \
-              -Dsonar.login=$SONAR_AUTH_TOKEN \
-              -Dsonar.host.url=$SONAR_URL
-          '''
+        stage('Maven Compile') {
+            steps {
+                sh 'mvn clean compile'
+            }
         }
-      }
-    }
 
-    stage('Deploy to Dev') {
-      steps {
-        script {
-          sh '''
-            kubectl apply -f ${MANIFEST_PATH}/dev/deployment.yaml --namespace=dev
-            kubectl rollout status deployment/spring-boot-app --namespace=dev
-          '''
+        stage('Maven Test') {
+            steps {
+                sh 'mvn test'
+            }
         }
-      }
-    }
 
-    stage('Deploy to Test') {
-      steps {
-        script {
-          sh '''
-            kubectl apply -f ${MANIFEST_PATH}/test/deployment.yaml --namespace=test
-            kubectl rollout status deployment/spring-boot-app --namespace=test
-          '''
+        stage("SonarQube Analysis") {
+            steps {
+                withSonarQubeEnv('sonar-server') {
+                    sh '''
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectName=case1 \
+                        -Dsonar.java.binaries=. \
+                        -Dsonar.projectKey=case1
+                    '''
+                }
+            }
         }
-      }
-    }
 
-    stage('Approval to Deploy to Prod') {
-      steps {
-        script {
-          input message: "Approve deployment to Prod?", parameters: [
-            booleanParam(name: 'Proceed', defaultValue: false, description: 'Approve the deployment to Prod')
-          ]
+        stage("Quality Gate") {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
+                }
+            }
         }
-      }
-    }
 
-    stage('Deploy to Prod') {
-      when {
-        expression { return params.Proceed == true }
-      }
-      steps {
-        script {
-          sh '''
-            kubectl apply -f ${MANIFEST_PATH}/prod/deployment.yaml --namespace=prod
-            kubectl rollout status deployment/spring-boot-app --namespace=prod
-          '''
+        stage("Docker Build & Push") {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'DOCKERHUB_CREDENTIALS', toolName: 'docker') {
+                        sh "docker build -t case1 ."
+                        sh "docker tag case1 bhavani1206/case1:latest"
+                        sh "docker push bhavani1206/case1:latest"
+                    }
+                }
+            }
         }
-      }
-    }
-  }
 
-  post {
-    success {
-      echo 'Deployment successful!'
-      mail to: 'sureshbasu100@gmail.com',
-           subject: "Jenkins Pipeline Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-           body: "Good news! Jenkins job '${env.JOB_NAME}' (build #${env.BUILD_NUMBER}) completed successfully.\n\nCheck details: ${env.BUILD_URL}"
-    }
+        stage("TRIVY") {
+            steps {
+                sh "trivy image bhavani1206/case1:latest > trivy.txt"
+            }
+        }
 
-    failure {
-      echo 'Deployment failed!'
-      mail to: 'sureshbasu100@gmail.com',
-           subject: "Jenkins Pipeline Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-           body: "Oops! Jenkins job '${env.JOB_NAME}' (build #${env.BUILD_NUMBER}) failed.\n\nCheck details: ${env.BUILD_URL}"
+        stage("Deploy to Container") {
+            steps {
+                sh 'docker run -d --name case1 -p 8082:8080 bhavani1206/case1:latest'
+            }
+        }
     }
-  }
 }
