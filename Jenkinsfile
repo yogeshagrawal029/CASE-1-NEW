@@ -7,11 +7,10 @@ pipeline {
 
     environment {
         SCANNER_HOME = tool 'sonar-scanner-latest'
-
     }
 
     stages {
-        stage('clean workspace') {
+        stage('Clean Workspace') {
             steps {
                 cleanWs()
             }
@@ -23,54 +22,61 @@ pipeline {
             }
         }
 
-        stage('mvn compile') {
+        stage('Maven Compile') {
             steps {
                 sh 'mvn clean compile'
             }
         }
 
-        stage('mvn test') {
+        stage('Maven Test') {
             steps {
                 sh 'mvn test'
             }
         }
 
-        stage("Sonarqube Analysis "){
-            steps{
+        stage("SonarQube Analysis") {
+            steps {
                 withSonarQubeEnv('sonar-server') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=case1 \
-                    -Dsonar.java.binaries=. \
-                    -Dsonar.projectKey=case1 '''
+                    sh '''
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectName=case1 \
+                        -Dsonar.java.binaries=. \
+                        -Dsonar.projectKey=case1
+                    '''
                 }
             }
         }
-        stage("quality gate"){
-           steps {
-                 script {
-                     waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token' 
-                    }
-                } 
-        } 
-    } // closes stages
-    stage("Docker Build & Push"){
-            steps{
-                script{
-                   withDockerRegistry(credentialsId: 'DOCKERHUB_CREDENTIALS', toolName: 'docker'){   
-                       sh "docker build -t case1 ."
-                       sh "docker tag case1 bhavani1206/case1:latest "
-                       sh "docker push bhavani1206/case1:latest "
+
+        stage("Quality Gate") {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
+                }
+            }
+        }
+
+        stage("Docker Build & Push") {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'DOCKERHUB_CREDENTIALS', toolName: 'docker') {
+                        sh "docker build -t case1 ."
+                        sh "docker tag case1 bhavani1206/case1:latest"
+                        sh "docker push bhavani1206/case1:latest"
                     }
                 }
             }
         }
-        stage("TRIVY"){
-            steps{
-                sh "trivy image bhavani1206/case1:latest > trivy.txt" 
+
+        stage("TRIVY") {
+            steps {
+                sh "trivy image bhavani1206/case1:latest > trivy.txt"
             }
         }
-    tage('Deploy to conatiner'){
-            steps{
+
+        stage("Deploy to Container") {
+            steps {
                 sh 'docker run -d --name case1 -p 8082:8080 bhavani1206/case1:latest'
             }
         }
-} // closes pipeline
+    }
+}
