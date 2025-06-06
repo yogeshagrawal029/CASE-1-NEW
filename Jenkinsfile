@@ -52,4 +52,20 @@ pipeline {
                 } 
         } 
     } // closes stages
+    stage("Docker Build & Push"){
+            steps{
+                script{
+                   withDockerRegistry(credentialsId: 'DOCKERHUB_CREDENTIALS', toolName: 'docker'){   
+                       sh "docker build -t case1 ."
+                       sh "docker tag case1 bhavani1206/case1:latest "
+                       sh "docker push bhavani1206/case1:latest "
+                    }
+                }
+            }
+        }
+        stage("TRIVY"){
+            steps{
+                sh "trivy image bhavani1206/case1:latest > trivy.txt" 
+            }
+        }
 } // closes pipeline
