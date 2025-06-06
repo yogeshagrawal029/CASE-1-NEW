@@ -1,7 +1,7 @@
 pipeline {
   agent any
   environment {
-    IMAGE_NAME = "bhavani1206/case1"
+    IMAGE_NAME = "bhavani1206/first"
     MANIFEST_PATH = "manifest_file/k8s"
   }
 
@@ -29,7 +29,7 @@ pipeline {
 
     stage('Push to DockerHub') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+        withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_CREDENTAILS', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
           sh '''
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
             docker push $IMAGE_NAME
@@ -40,10 +40,10 @@ pipeline {
 
     stage('Static Code Analysis') {
       environment {
-        SONAR_URL = "http://18.116.40.31:9000"
+        SONAR_URL = "http://3.108.184.223:9000"
       }
       steps {
-        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
           sh '''
             mvn sonar:sonar \
               -Dsonar.login=$SONAR_AUTH_TOKEN \
