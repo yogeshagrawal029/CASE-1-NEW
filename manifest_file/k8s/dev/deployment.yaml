@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: case1
-        image: basu357/basurepo:1
+        image: bhavani1206/first
         ports:
         - containerPort: 8080
