@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: case1
-        image: bhavani1206/first
+        image: bhavani1206/first:latest
         ports:
         - containerPort: 8080
