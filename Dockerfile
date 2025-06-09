@@ -2,7 +2,7 @@ FROM adoptopenjdk/openjdk11:alpine-jre
  
 
 # Simply the artifact path
-ARG artifact=target/spring-boot-web.jar
+ARG artifact=target/springboot-demo-1.0.0.jar
 
 WORKDIR /opt/app
 
