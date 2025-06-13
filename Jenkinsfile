@@ -58,7 +58,6 @@ pipeline {
         script {
           sh """
             kubectl apply -f ${MANIFEST_PATH}/dev/deployment.yaml --namespace=dev
-            // kubectl rollout status deployment/case1 --namespace=dev
           """
         }
       }
