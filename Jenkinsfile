@@ -5,9 +5,6 @@ pipeline {
         maven 'Maven 3' // Match Global Tool Configuration
     }
 
-    environment {
-        
-    }
 
     stages {
         stage('Checkout from SCM') {
