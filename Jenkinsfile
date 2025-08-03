@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     tools {
+        git 'default'
         jdk 'Java 21'
         maven 'Maven 3' // Match Global Tool Configuration
     }
