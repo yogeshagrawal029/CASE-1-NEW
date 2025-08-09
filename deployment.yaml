@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: cont1
-          image: marutih8/my-app-name
+          image: yogeshagrawal029/demo-app-name
           ports:
             - containerPort: 8080 
