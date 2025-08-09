@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: app-deployment
+spec:
+  selector:
+    matchLabels:
+      app: myapp
+  replicas: 3 
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+        - name: cont1
+          image: marutih8/my-app-name
+          ports:
+            - containerPort: 8080 
